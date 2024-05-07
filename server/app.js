@@ -16,7 +16,6 @@ app.use(cors());
 // 处理用户发送的消息
 router.post('/sendMessage', async (ctx) => {
     const userMessage = ctx.request.body.message;
-
     // 模拟机器人思考中...
     await new Promise(resolve => setTimeout(resolve, 1000)); // 模拟1秒的思考时间
     ctx.body = `你好，我收到了你的消息"${userMessage}"，正在思考中...`;
