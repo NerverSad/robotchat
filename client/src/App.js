@@ -9,7 +9,7 @@ function ChatApp() {
 
   const sendMessage = async () => {
     // 发送用户消息到后端
-    const response = await axios.post('http://localhost:3001/sendMessage', { message: userMessage });
+    const response = await axios.post('http://localhost:3000/robots/sendMessage', { message: userMessage });
     setBotMessage(response.data);
   };
 

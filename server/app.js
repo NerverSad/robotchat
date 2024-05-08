@@ -1,30 +1,45 @@
-// 后端 Node.js 代码，使用 Koa 框架
-
-const Koa = require('koa');
-const bodyParser = require('koa-bodyparser');
-const router = require('koa-router')();
+const Koa = require('koa')
+const app = new Koa()
+const views = require('koa-views')
+const json = require('koa-json')
+const onerror = require('koa-onerror')
+const bodyparser = require('koa-bodyparser')
+const logger = require('koa-logger')
 const cors = require('@koa/cors');
-const app = new Koa();
-const port = 3001;
 
-// 解析请求体中的 JSON 数据
-app.use(bodyParser());
+const robot = require('./routes/robot')
 
-// 处理跨域
+// error handler
+onerror(app)
+//跨域
 app.use(cors());
 
-// 处理用户发送的消息
-router.post('/sendMessage', async (ctx) => {
-    const userMessage = ctx.request.body.message;
-    // 模拟机器人思考中...
-    await new Promise(resolve => setTimeout(resolve, 1000)); // 模拟1秒的思考时间
-    ctx.body = `你好，我收到了你的消息"${userMessage}"，正在思考中...`;
+// middlewares
+app.use(bodyparser({
+  enableTypes: ['json', 'form', 'text']
+}))
+app.use(json())
+app.use(logger())
+app.use(require('koa-static')(__dirname + '/public'))
+
+app.use(views(__dirname + '/views', {
+  extension: 'pug'
+}))
+
+// logger
+app.use(async (ctx, next) => {
+  const start = new Date()
+  await next()
+  const ms = new Date() - start
+  console.log(`${ctx.method} ${ctx.url} - ${ms}ms`)
+})
+
+// routes
+app.use(robot.routes(), robot.allowedMethods())
+
+// error-handling
+app.on('error', (err, ctx) => {
+  console.error('server error', err, ctx)
 });
 
-// 注册路由
-app.use(router.routes());
-
-// 启动后端服务器
-app.listen(port, () => {
-    console.log(`后端服务器运行在 http://localhost:${port}`);
-});
+module.exports = app
